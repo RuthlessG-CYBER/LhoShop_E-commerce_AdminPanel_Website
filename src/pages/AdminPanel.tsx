@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   Users,
   Package,
@@ -28,6 +28,7 @@ import {
 
 import { Button } from "../components/ui/button";
 
+
 const menuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { id: "users", label: "Users", icon: Users, path: "/users" },
@@ -43,6 +44,7 @@ const menuItems = [
 ];
 
 export default function AdminPanel() {
+  const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -130,12 +132,15 @@ export default function AdminPanel() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="relative group">
-              <Bell className="h-5 w-5 text-muted-foreground group-hover:text-indigo-600 transition-colors cursor-pointer" />
+            <div 
+              className="relative group cursor-pointer" 
+              onClick={() => navigate("/notifications")}
+            >
+              <Bell className="h-5 w-5 text-muted-foreground group-hover:text-indigo-600 transition-colors" />
               <span className="absolute top-0 right-0 w-2 h-2 bg-indigo-500 rounded-full border-2 border-background"></span>
             </div>
 
-            <div className="h-8 w-8 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground text-xs font-bold cursor-pointer hover:border-indigo-300 transition-all">
+            <div className="h-8 w-8 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground text-xs font-bold cursor-pointer hover:border-indigo-300 transition-all outline-none">
               JD
             </div>
           </div>
