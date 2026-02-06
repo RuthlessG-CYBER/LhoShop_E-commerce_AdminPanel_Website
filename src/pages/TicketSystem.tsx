@@ -33,6 +33,14 @@ type Ticket = {
   createdAt: string;
 };
 
+const getID = (id: any): string => {
+  if (!id) return "—";
+  if (typeof id === "string") return id;
+  if (id.$oid) return id.$oid;
+  if (id._id) return id._id;
+  return "—";
+};
+
 export default function TicketSystem() {
   const token = localStorage.getItem("token");
 
@@ -121,32 +129,30 @@ export default function TicketSystem() {
     );
   }, [tickets, search]);
 
-  const priorityColor = (p: string) => {
+  const getPriorityStyles = (p: string) => {
     switch (p) {
       case "Critical":
-        return "destructive";
+        return "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/50";
       case "High":
-        return "secondary";
+        return "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/50";
       case "Medium":
-        return "outline";
-      case "Low":
-        return "outline";
+        return "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50";
       default:
-        return "outline";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
-  const statusColor = (s: string) => {
+  const getStatusStyles = (s: string) => {
     switch (s) {
       case "Resolved":
       case "Closed":
-        return "default";
+        return "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50";
       case "In Progress":
-        return "secondary";
+        return "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/50";
       case "Open":
-        return "outline";
+        return "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/50";
       default:
-        return "outline";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
@@ -208,7 +214,7 @@ export default function TicketSystem() {
               />
 
               <select
-                className="w-full border border-border bg-card rounded-md h-10 px-3 text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                className="w-full border border-border bg-card rounded-xl h-12 px-4 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
               >
@@ -285,8 +291,8 @@ export default function TicketSystem() {
                       key={t._id}
                       className="border-b border-border hover:bg-muted/30 transition-colors"
                     >
-                      <td className="px-6 py-4 font-mono text-[10px] text-primary">
-                        {t.ticketId}
+                      <td className="px-6 py-4 font-mono text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">
+                        {getID(t.ticketId)}
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-semibold text-foreground">
@@ -306,16 +312,14 @@ export default function TicketSystem() {
                       </td>
                       <td className="px-6 py-4">
                         <Badge
-                          variant={priorityColor(t.priority)}
-                          className="rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm border ${getPriorityStyles(t.priority)}`}
                         >
                           {t.priority}
                         </Badge>
                       </td>
                       <td className="px-6 py-4">
                         <Badge
-                          variant={statusColor(t.status)}
-                          className="rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm border ${getStatusStyles(t.status)}`}
                         >
                           {t.status}
                         </Badge>

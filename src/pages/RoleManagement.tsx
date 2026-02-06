@@ -50,28 +50,28 @@ export default function RoleManagement() {
       name: "Super Admin",
       users: 0,
       permissions: ["Create", "Read", "Update", "Delete"],
-      color: "bg-red-100 text-red-800",
+      color: "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/50",
     },
     {
       id: 2,
       name: "Admin",
       users: 0,
       permissions: ["Read", "Update", "Create"],
-      color: "bg-blue-100 text-blue-800",
+      color: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50",
     },
     {
       id: 3,
       name: "Manager",
       users: 0,
       permissions: ["Read", "Update"],
-      color: "bg-green-100 text-green-800",
+      color: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50",
     },
     {
       id: 4,
       name: "Support",
       users: 0,
       permissions: ["Read"],
-      color: "bg-gray-100 text-gray-800",
+      color: "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/50",
     },
   ])
 
@@ -138,20 +138,20 @@ export default function RoleManagement() {
     <div className="p-6 space-y-6 bg-background text-foreground min-h-screen">
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Role & Access Management
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Manage user roles and permissions
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Role Management</h1>
+        <p className="text-sm font-medium text-muted-foreground mt-1">
+          Manage system roles and administrator permissions
         </p>
+      </div>
       </div>
 
       <div className="flex justify-end">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Plus className="w-4 h-4" />
-              Add User
+            <Button className="rounded-xl px-4 font-bold shadow-lg shadow-primary/20 transition-all">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Admin
             </Button>
           </DialogTrigger>
 
@@ -160,30 +160,33 @@ export default function RoleManagement() {
               <DialogTitle>Create Admin User</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-3">
-              <Input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} />
-              <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              <Input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            <div className="space-y-4 pt-4">
+              <Input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl bg-muted/30" />
+              <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl bg-muted/30" />
+              <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl bg-muted/30" />
+              <Input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="rounded-xl bg-muted/30" />
 
-              <select
-                className="w-full border border-border bg-card rounded-md h-10 px-3 text-sm text-foreground"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
-                <option value="superadmin">Super Admin</option>
-                <option value="admin">Admin</option>
-                <option value="manager">Manager</option>
-                <option value="support">Support</option>
-              </select>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Access Role</label>
+                <select
+                  className="w-full border border-border bg-card rounded-xl h-12 px-4 text-sm font-medium focus:ring-2 focus:ring-primary transition-all shadow-sm"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                >
+                  <option value="superadmin">Super Admin</option>
+                  <option value="admin">Admin</option>
+                  <option value="manager">Manager</option>
+                  <option value="support">Support</option>
+                </select>
+              </div>
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>
+            <DialogFooter className="pt-6">
+              <Button variant="outline" onClick={() => setOpen(false)} className="rounded-xl px-6">
                 Cancel
               </Button>
-              <Button onClick={createUser} disabled={loading} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                {loading ? "Creating..." : "Create User"}
+              <Button onClick={createUser} disabled={loading} className="rounded-xl px-6 font-bold shadow-lg shadow-primary/20">
+                {loading ? "Creating..." : "Confirm & Create"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -192,27 +195,32 @@ export default function RoleManagement() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {roles.map((r) => (
-          <Card key={r.id} className="hover:shadow-md transition">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg ${r.color.replace('bg-', 'bg-opacity-20 bg-')} flex items-center justify-center`}>
-                  <Users className="w-5 h-5" />
+          <Card key={r.id} className="bg-card rounded-3xl border border-border overflow-hidden hover:shadow-md transition-all duration-300">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-2xl border ${r.color} flex items-center justify-center shadow-sm`}>
+                  <Users className="w-6 h-6" />
                 </div>
 
                 <div>
-                  <CardTitle className="text-lg">{r.name}</CardTitle>
-                  <CardDescription>{r.users} users assigned</CardDescription>
+                  <CardTitle className="text-xl font-bold tracking-tight">{r.name}</CardTitle>
+                  <CardDescription className="text-sm font-medium">{r.users} Active Administrators</CardDescription>
                 </div>
               </div>
             </CardHeader>
 
             <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {r.permissions.map((perm) => (
-                  <Badge key={perm} variant="outline">
-                    {perm}
-                  </Badge>
-                ))}
+              <div className="space-y-4">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  Key Permissions
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {r.permissions.map((perm) => (
+                    <Badge key={perm} className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider border shadow-sm bg-muted/30 text-foreground">
+                      {perm}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

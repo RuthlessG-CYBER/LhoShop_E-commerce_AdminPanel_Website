@@ -41,6 +41,14 @@ type ReturnItem = {
   createdAt: string;
 };
 
+const getID = (id: any): string => {
+  if (!id) return "—";
+  if (typeof id === "string") return id;
+  if (id.$oid) return id.$oid;
+  if (id._id) return id._id;
+  return "—";
+};
+
 export default function ReturnManagement() {
   const [returns, setReturns] = useState<ReturnItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -240,11 +248,11 @@ export default function ReturnManagement() {
                   filtered.map((r) => (
                     <tr key={r._id} className="hover:bg-muted/5 transition-colors">
                       <td className="px-6 py-4 font-mono text-xs text-muted-foreground/70">
-                        {r._id}
+                        {getID(r._id)}
                       </td>
 
                       <td className="px-6 py-4 font-mono text-indigo-600 dark:text-indigo-400 font-semibold text-xs">
-                        {r.paymentId?.orderId || "—"}
+                        {getID(r.paymentId?.orderId)}
                       </td>
 
                       <td className="px-6 py-4">

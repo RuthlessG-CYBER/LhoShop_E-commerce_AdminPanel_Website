@@ -41,6 +41,14 @@ type User = {
   address: Address[]
 }
 
+const getID = (id: any): string => {
+  if (!id) return "—";
+  if (typeof id === "string") return id;
+  if (id.$oid) return id.$oid;
+  if (id._id) return id._id;
+  return "—";
+};
+
 type RegisterForm = {
   name: string
   email: string
@@ -140,10 +148,10 @@ export default function UserManagement() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Users
+            User Management
           </h1>
           <p className="text-sm font-medium text-muted-foreground mt-1">
-            Manage and monitor customer activity across your platform.
+            Maintain and monitor customer accounts and access levels
           </p>
         </div>
 
@@ -300,16 +308,19 @@ export default function UserManagement() {
                   <tr key={user._id} className="group hover:bg-muted/50">
 
                     <td className="px-6 py-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-[11px]">
+                      <div className="w-10 h-10 rounded-2xl border bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-[11px] shadow-sm">
                         {initials(user.name)}
                       </div>
-                      <span className="text-sm font-semibold text-foreground">{user.name}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-foreground">{user.name}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground/60">{getID(user._id)}</span>
+                      </div>
                     </td>
 
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{user.email}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-muted-foreground">{user.email}</td>
 
                     <td className="px-6 py-4">
-                      <Badge className="rounded-xl px-2.5 py-0.5 border text-[10px] font-bold uppercase bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50">
+                      <Badge className="rounded-full px-2.5 py-0.5 border text-[10px] font-bold uppercase tracking-wider shadow-sm bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50">
                         Active
                       </Badge>
                     </td>

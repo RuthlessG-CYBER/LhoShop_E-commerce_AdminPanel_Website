@@ -42,6 +42,14 @@ type Order = {
   createdAt: string;
 };
 
+const getID = (id: any): string => {
+  if (!id) return "—";
+  if (typeof id === "string") return id;
+  if (id.$oid) return id.$oid;
+  if (id._id) return id._id;
+  return "—";
+};
+
 export default function OrderManagement() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -254,10 +262,10 @@ export default function OrderManagement() {
                 {filteredOrders.map((order) => (
                   <tr key={order._id} className="hover:bg-muted/5 transition-colors">
                     <td className="px-6 py-4 font-mono text-[11px] text-muted-foreground/70">
-                      {order.orderId}
+                      {getID(order.orderId)}
                     </td>
 
-                    <td className="px-6 py-4 font-mono text-[11px] text-muted-foreground/70">{order.userId}</td>
+                    <td className="px-6 py-4 font-mono text-[11px] text-muted-foreground/70">{getID(order.userId)}</td>
 
                     <td className="px-6 py-4 text-sm font-medium">
                       {getItemCount(order.items)} Items

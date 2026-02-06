@@ -38,6 +38,14 @@ type Product = {
   active: boolean;
 };
 
+const getID = (id: any): string => {
+  if (!id) return "—";
+  if (typeof id === "string") return id;
+  if (id.$oid) return id.$oid;
+  if (id._id) return id._id;
+  return "—";
+};
+
 type ProductForm = {
   name: string;
   description: string;
@@ -215,11 +223,12 @@ export default function ProductManagement() {
               <DialogTitle>Add Product</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-3 py-2">
+            <div className="space-y-4 pt-4">
               <Input
                 placeholder="Name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="rounded-xl bg-muted/30"
               />
               <Input
                 placeholder="Description"
@@ -227,41 +236,51 @@ export default function ProductManagement() {
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
+                className="rounded-xl bg-muted/30"
               />
               <Input
                 placeholder="Image URL"
                 value={form.image}
                 onChange={(e) => setForm({ ...form, image: e.target.value })}
+                className="rounded-xl bg-muted/30"
               />
-              <Input
-                type="number"
-                placeholder="Price"
-                value={form.price}
-                onChange={(e) =>
-                  setForm({ ...form, price: String(e.target.value) })
-                }
-              />
-              <Input
-                type="number"
-                placeholder="Stock"
-                value={form.stock}
-                onChange={(e) =>
-                  setForm({ ...form, stock: String(e.target.value) })
-                }
-              />
-              <Input
-                type="number"
-                placeholder="Rating (0-5)"
-                value={form.rating}
-                onChange={(e) =>
-                  setForm({ ...form, rating: String(e.target.value) })
-                }
-              />
-              <Input
-                placeholder="Category"
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  type="number"
+                  placeholder="Price"
+                  value={form.price}
+                  onChange={(e) =>
+                    setForm({ ...form, price: String(e.target.value) })
+                  }
+                  className="rounded-xl bg-muted/30"
+                />
+                <Input
+                  type="number"
+                  placeholder="Stock"
+                  value={form.stock}
+                  onChange={(e) =>
+                    setForm({ ...form, stock: String(e.target.value) })
+                  }
+                  className="rounded-xl bg-muted/30"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  type="number"
+                  placeholder="Rating"
+                  value={form.rating}
+                  onChange={(e) =>
+                    setForm({ ...form, rating: String(e.target.value) })
+                  }
+                  className="rounded-xl bg-muted/30"
+                />
+                <Input
+                  placeholder="Category"
+                  value={form.type}
+                  onChange={(e) => setForm({ ...form, type: e.target.value })}
+                  className="rounded-xl bg-muted/30"
+                />
+              </div>
             </div>
 
             <DialogFooter className="flex gap-3">
@@ -277,15 +296,15 @@ export default function ProductManagement() {
               <Button
                 onClick={handleAddProduct}
                 disabled={submitting}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl h-12 shadow-lg shadow-primary/20"
               >
                 {submitting ? (
                   <>
                     <Loader2 className="animate-spin mr-2 h-4 w-4" />
-                    Saving...
+                    Processing...
                   </>
                 ) : (
-                  "Save Product"
+                  editId ? "Update Product" : "Create Product"
                 )}
               </Button>
             </DialogFooter>
@@ -408,14 +427,14 @@ export default function ProductManagement() {
               <tbody className="divide-y divide-border">
                 {filteredProducts.map((p) => (
                   <tr key={p._id} className="hover:bg-muted/50">
-                    <td className="px-6 py-5 font-semibold text-foreground">
+                    <td className="px-6 py-5 font-bold text-foreground text-sm">
                       {p.name}
                     </td>
-                    <td className="px-6 py-5 font-mono text-muted-foreground">
-                      {p._id.slice(-6)}
+                    <td className="px-6 py-5 font-mono text-[10px] text-muted-foreground/70">
+                      {getID(p._id)}
                     </td>
                     <td className="px-6 py-5">
-                      <span className="text-xs font-bold px-2 py-1 rounded-lg bg-muted border border-border text-foreground">
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-muted/50 border border-border text-foreground uppercase tracking-wider shadow-sm">
                         {p.type}
                       </span>
                     </td>

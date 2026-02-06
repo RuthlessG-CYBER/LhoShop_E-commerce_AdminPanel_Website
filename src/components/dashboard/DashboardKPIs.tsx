@@ -141,12 +141,12 @@ export function DashboardKPIs() {
       {stats.map((stat) => (
         <Card
           key={stat.label}
-          className="bg-card border-border overflow-hidden group hover:border-indigo-500/30 transition-all duration-300 shadow-sm hover:shadow-md relative"
+          className="bg-card border-border overflow-hidden rounded-3xl group hover:border-indigo-500/30 transition-all duration-300 shadow-sm hover:shadow-md relative"
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div
-                className={`p-2.5 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-300`}
+                className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-300 border border-current/10 shadow-sm`}
               >
                 <stat.icon className="h-5 w-5" />
               </div>

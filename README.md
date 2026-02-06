@@ -1,73 +1,76 @@
-# React + TypeScript + Vite
+# 🚀 LhoShop Admin Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A premium, high-performance E-commerce Administration System built with **React**, **TypeScript**, and **Vite**. Designed for merchants who demand professional-grade telemetry, inventory orchestration, and order fulfillment capabilities.
 
-Currently, two official plugins are available:
+![LhoShop Banner](https://img.shields.io/badge/LhoShop-Admin_Dashboard-indigo?style=for-the-badge&logo=react)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Core Features
 
-## React Compiler
+- **📊 Advanced Analytics**: Real-time revenue telemetry and order trends using custom-tuned Shadcn charts.
+- **🛡️ Secure Access**: Industrial-strength authentication with JWT, biometric-ready logic, and CAPTCHA security checks.
+- **📦 Inventory Orchestration**: Full product lifecycle management with SKU tracking and automated stock status indicators.
+- **🚚 Order Fulfillment**: Real-time order status tracking and multi-stage delivery management.
+- **↩️ Return Management**: Dedicated portal for handling returns, refunds, and replacements with robust data integrity.
+- **🎫 Support Ecosystem**: Integrated ticketing system for customer success and issue resolution.
+- **🎨 Premium UX**: A cohesive, dark-mode-first aesthetic powered by **Shadcn/UI** and custom **Indigo** design system.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Technology Stack
 
-## Expanding the ESLint configuration
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, Lucide Icons, Shadcn/UI
+- **Routing**: React Router 6 (Client-side SAP)
+- **Charts**: Recharts with Shadcn wrappers
+- **Deployment**: Optimized for Vercel with custom SPA routing
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Quick Start
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
+- Node.js (v18+)
+- npm or yarn
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd dashboard1
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment**
+   Create a `.env` file in the root (if not already present):
+   ```env
+   VITE_API_URL=your_backend_api_endpoint
+   ```
+
+4. **Launch Development Server**
+   ```bash
+   npm run dev
+   ```
+
+## 🏗️ Project Structure
+
+```text
+src/
+├── components/     # Atomic UI components and Shadcn/UI primitives
+├── pages/          # Full-page view components (Orders, Products, Returns, etc.)
+├── hooks/          # Custom business logic and data fetching hooks
+├── lib/            # Shared utility functions and API configurations
+├── styles/         # Global design tokens and Tailwind extensions
+└── App.tsx         # Main application shell and route definitions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🌐 Deployment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This project is configured for seamless deployment on **Vercel**. The included `vercel.json` ensures that client-side routing works flawlessly on refresh and direct URL access.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📄 License
+
+Internal Project - All Rights Reserved.

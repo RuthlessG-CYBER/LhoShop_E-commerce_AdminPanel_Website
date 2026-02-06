@@ -75,17 +75,17 @@ export function RecentOrders() {
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="border-b border-border">
-            <th className="py-4 text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">
+          <tr className="border-b border-border bg-muted/20">
+            <th className="px-4 py-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               Order ID
             </th>
-            <th className="py-4 text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">
+            <th className="px-4 py-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               Customer
             </th>
-            <th className="pb-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
+            <th className="px-4 py-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-right">
               Amount
             </th>
-            <th className="pb-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
+            <th className="px-4 py-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-right">
               Status
             </th>
           </tr>
@@ -94,28 +94,28 @@ export function RecentOrders() {
         <tbody className="divide-y divide-border">
           {orders.map((order) => (
             <tr key={order.id} className="hover:bg-muted/50 transition-colors">
-              <td className="py-4 text-sm font-semibold">
+              <td className="px-4 py-4 font-mono text-[11px] text-muted-foreground/70">
                 {order.id}
               </td>
 
-              <td className="py-4">
+              <td className="px-4 py-4">
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold">
+                  <span className="text-sm font-bold text-foreground">
                     {order.customer}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] text-muted-foreground">
                     {order.email}
                   </span>
                 </div>
               </td>
 
-              <td className="py-4 text-sm text-right font-bold">
+              <td className="px-4 py-4 text-sm text-right font-bold text-foreground/80">
                 {order.amount}
               </td>
 
-              <td className="py-4 text-right">
+              <td className="px-4 py-4 text-right">
                 <Badge
-                  className={`rounded-xl px-2.5 py-0.5 border text-[10px] font-bold uppercase ${getStatusStyles(order.status)}`}
+                  className={`rounded-full px-2.5 py-0.5 border text-[10px] font-bold uppercase tracking-wider shadow-sm ${getStatusStyles(order.status)}`}
                 >
                   {order.status}
                 </Badge>
