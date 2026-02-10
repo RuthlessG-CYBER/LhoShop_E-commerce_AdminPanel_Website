@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
-import { BASE_URL } from "@/lib/api"
+import api from "@/lib/api"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type Order = {
   id: string
@@ -33,20 +33,10 @@ export function RecentOrders() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const token = localStorage.getItem("token")
-
-        const res = await axios.get(
-          `${BASE_URL}/admin/recent-orders`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-
+        const res = await api.get("/admin/recent-orders")
         setOrders(res.data.orders || [])
       } catch (err) {
-        console.log(err)
+        console.log("Error fetching recent orders:", err)
       } finally {
         setLoading(false)
       }
@@ -54,22 +44,6 @@ export function RecentOrders() {
 
     fetchOrders()
   }, [])
-
-  if (loading) {
-    return (
-      <p className="text-sm text-muted-foreground text-center py-6">
-        Loading orders...
-      </p>
-    )
-  }
-
-  if (!orders.length) {
-    return (
-      <p className="text-sm text-muted-foreground text-center py-6">
-        No recent orders found
-      </p>
-    )
-  }
 
   return (
     <div className="overflow-x-auto">
@@ -92,36 +66,58 @@ export function RecentOrders() {
         </thead>
 
         <tbody className="divide-y divide-border">
-          {orders.map((order) => (
-            <tr key={order.id} className="hover:bg-muted/50 transition-colors">
-              <td className="px-4 py-4 font-mono text-[11px] text-muted-foreground/70">
-                {order.id}
-              </td>
-
-              <td className="px-4 py-4">
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-foreground">
-                    {order.customer}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {order.email}
-                  </span>
-                </div>
-              </td>
-
-              <td className="px-4 py-4 text-sm text-right font-bold text-foreground/80">
-                {order.amount}
-              </td>
-
-              <td className="px-4 py-4 text-right">
-                <Badge
-                  className={`rounded-full px-2.5 py-0.5 border text-[10px] font-bold uppercase tracking-wider shadow-sm ${getStatusStyles(order.status)}`}
-                >
-                  {order.status}
-                </Badge>
+          {loading ? (
+            [...Array(5)].map((_, i) => (
+              <tr key={i}>
+                <td className="px-4 py-4"><Skeleton className="h-4 w-16" /></td>
+                <td className="px-4 py-4">
+                  <div className="flex flex-col gap-1">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                </td>
+                <td className="px-4 py-4 text-right"><Skeleton className="h-4 w-12 ml-auto" /></td>
+                <td className="px-4 py-4 text-right"><Skeleton className="h-5 w-20 rounded-full ml-auto" /></td>
+              </tr>
+            ))
+          ) : orders.length === 0 ? (
+            <tr>
+              <td colSpan={4} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                No recent orders found
               </td>
             </tr>
-          ))}
+          ) : (
+            orders.map((order) => (
+              <tr key={order.id} className="hover:bg-muted/50 transition-colors">
+                <td className="px-4 py-4 font-mono text-[11px] text-muted-foreground/70">
+                  {order.id}
+                </td>
+
+                <td className="px-4 py-4">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-foreground">
+                      {order.customer}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {order.email}
+                    </span>
+                  </div>
+                </td>
+
+                <td className="px-4 py-4 text-sm text-right font-bold text-foreground/80">
+                  {order.amount}
+                </td>
+
+                <td className="px-4 py-4 text-right">
+                  <Badge
+                    className={`rounded-full px-2.5 py-0.5 border text-[10px] font-bold uppercase tracking-wider shadow-sm ${getStatusStyles(order.status)}`}
+                  >
+                    {order.status}
+                  </Badge>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

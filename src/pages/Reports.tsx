@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
-import axios, { AxiosError } from "axios"
-import { BASE_URL } from "@/lib/api"
+import { AxiosError } from "axios"
+import api from "@/lib/api"
 
 import {
   Card,
@@ -25,9 +25,10 @@ import {
 
 import { Download, BarChart3, Calendar, TrendingUp } from "lucide-react"
 
+import { Skeleton } from "@/components/ui/skeleton"
 
 
-/* ================= TYPES ================= */
+
 
 type Sales = { revenue: number; totalOrders: number }
 type Users = { totalUsers: number }
@@ -44,21 +45,11 @@ type ReportRow = {
 
 
 
-/* ================= API CLIENT ================= */
-
-const api = axios.create({
-  baseURL: BASE_URL,
-})
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token")
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
 
 
 
-/* ================= ENDPOINTS ================= */
+
+
 
 const REPORT_ENDPOINTS = {
   sales: "/admin/reports/sales",
@@ -76,7 +67,6 @@ const REPORT_ENDPOINTS = {
 
 
 
-/* ================= COMPONENT ================= */
 
 export default function Reports() {
   const [search, setSearch] = useState("")
@@ -95,7 +85,6 @@ export default function Reports() {
 
 
 
-  /* ================= FETCH ================= */
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -127,7 +116,6 @@ export default function Reports() {
 
 
 
-  /* ================= DOWNLOAD ================= */
 
   const downloadFile = async (endpoint: string, filename: string) => {
     try {
@@ -154,7 +142,6 @@ export default function Reports() {
 
 
 
-  /* ================= REPORT LIST ================= */
 
   const reports: ReportRow[] = useMemo(
     () => [
@@ -196,7 +183,6 @@ export default function Reports() {
 
 
 
-  /* ================= UI (UNCHANGED) ================= */
 
   return (
     <div className="p-8 space-y-8 bg-background text-foreground min-h-screen">
@@ -216,47 +202,61 @@ export default function Reports() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {loading ? (
+          [...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6 flex items-center gap-3">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-12" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="text-2xl font-bold">{sales.totalOrders}</p>
+                  <p className="text-sm text-muted-foreground">Orders</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <BarChart3 className="h-5 w-5 text-blue-600" />
-            <div>
-              <p className="text-2xl font-bold">{sales.totalOrders}</p>
-              <p className="text-sm text-muted-foreground">Orders</p>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                <div>
+                  <p className="text-2xl font-bold">₹{sales.revenue}</p>
+                  <p className="text-sm text-muted-foreground">Revenue</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <TrendingUp className="h-5 w-5 text-green-600" />
-            <div>
-              <p className="text-2xl font-bold">₹{sales.revenue}</p>
-              <p className="text-sm text-muted-foreground">Revenue</p>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <Calendar className="h-5 w-5 text-purple-600" />
+                <div>
+                  <p className="text-2xl font-bold">{users.totalUsers}</p>
+                  <p className="text-sm text-muted-foreground">Users</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <Calendar className="h-5 w-5 text-purple-600" />
-            <div>
-              <p className="text-2xl font-bold">{users.totalUsers}</p>
-              <p className="text-sm text-muted-foreground">Users</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <BarChart3 className="h-5 w-5 text-orange-600" />
-            <div>
-              <p className="text-2xl font-bold">{products.totalProducts}</p>
-              <p className="text-sm text-muted-foreground">Products</p>
-            </div>
-          </CardContent>
-        </Card>
-
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <BarChart3 className="h-5 w-5 text-orange-600" />
+                <div>
+                  <p className="text-2xl font-bold">{products.totalProducts}</p>
+                  <p className="text-sm text-muted-foreground">Products</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
 
@@ -281,9 +281,6 @@ export default function Reports() {
         </CardHeader>
 
         <CardContent>
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : (
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
@@ -296,29 +293,42 @@ export default function Reports() {
               </TableHeader>
 
               <TableBody>
-                {filtered.map((r, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="font-semibold">{r.name}</TableCell>
-                    <TableCell>{r.description}</TableCell>
-                    <TableCell><Badge variant="outline">{r.frequency}</Badge></TableCell>
-                    <TableCell>{r.format}</TableCell>
-                    <TableCell>
-                      {r.endpoint && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => downloadFile(r.endpoint!, `${r.name}.pdf`)}
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {loading ? (
+                  [...Array(4)].map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-8 w-24 ml-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  filtered.map((r, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="font-semibold">{r.name}</TableCell>
+                      <TableCell>{r.description}</TableCell>
+                      <TableCell><Badge variant="outline">{r.frequency}</Badge></TableCell>
+                      <TableCell>{r.format}</TableCell>
+                      <TableCell className="text-right">
+                        {r.endpoint && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => downloadFile(r.endpoint!, `${r.name}.pdf`)}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
-          )}
         </CardContent>
       </Card>
     </div>

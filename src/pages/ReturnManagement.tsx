@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 import {
   Search,
   Filter,
@@ -12,6 +12,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +20,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-import { BASE_URL } from "@/lib/api";
 
 type ReturnItem = {
   _id: string;
@@ -56,16 +55,12 @@ export default function ReturnManagement() {
   const [sort, setSort] = useState<"new" | "old" | "high" | "low">("new");
   const [sortOpen, setSortOpen] = useState(false);
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  };
+
 
   const fetchReturns = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/returns`, config);
+      const res = await api.get("/returns");
       setReturns(res.data.returns || []);
     } finally {
       setLoading(false);
@@ -77,7 +72,7 @@ export default function ReturnManagement() {
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
-    await axios.patch(`${BASE_URL}/returns/${id}`, { status }, config);
+    await api.patch(`/returns/${id}`, { status });
     fetchReturns();
   };
 
@@ -222,115 +217,132 @@ export default function ReturnManagement() {
         </div>
 
         <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-10 text-center text-muted-foreground">Loading...</div>
-          ) : (
-            <table className="w-full">
-              <thead className="bg-muted/50 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                <tr className="border-b border-border">
-                  <th className="px-6 py-4 text-left">Return ID</th>
-                  <th className="px-6 py-4 text-left">Order</th>
-                  <th className="px-6 py-4 text-left">Customer</th>
-                  <th className="px-6 py-4 text-left">Reason / Date</th>
-                  <th className="px-6 py-4 text-left">Status</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
+          <table className="w-full">
+            <thead className="bg-muted/50 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              <tr className="border-b border-border">
+                <th className="px-6 py-4 text-left">Return ID</th>
+                <th className="px-6 py-4 text-left">Order</th>
+                <th className="px-6 py-4 text-left">Customer</th>
+                <th className="px-6 py-4 text-left">Reason / Date</th>
+                <th className="px-6 py-4 text-left">Status</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
 
-              <tbody className="divide-y divide-border">
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                      No return requests found.
+            <tbody className="divide-y divide-border">
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-40" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-6 w-24 rounded-full" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="h-8 w-16 ml-auto" /></td>
+                  </tr>
+                ))
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                    No return requests found.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((r) => (
+                  <tr key={r._id} className="hover:bg-muted/5 transition-colors">
+                    <td className="px-6 py-4 font-mono text-xs text-muted-foreground/70">
+                      {getID(r._id)}
+                    </td>
+
+                    <td className="px-6 py-4 font-mono text-indigo-600 dark:text-indigo-400 font-semibold text-xs">
+                      {getID(r.paymentId?.orderId)}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-sm">{r.userId.name}</span>
+                        <span className="text-xs text-muted-foreground">{r.userId.email}</span>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <p className="text-xs line-clamp-1 max-w-[200px]">{r.reason}</p>
+                        <div className="text-[10px] text-muted-foreground">
+                          {new Date(r.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span
+                        className={`flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border shadow-sm w-fit ${getStatusStyles(
+                          r.status,
+                        )}`}
+                      >
+                        {getStatusIcon(r.status)}
+                        {r.status}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        {r.status === "Pending" && (
+                          <>
+                            <Button
+                              size="sm"
+                              className="h-8 px-3 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                              onClick={() => updateStatus(r._id, "Approved")}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-8 px-3 text-[11px] font-bold"
+                              onClick={() => updateStatus(r._id, "Rejected")}
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        )}
+
+                        {r.status === "Approved" && (
+                          <>
+                            <Button
+                              size="sm"
+                              className="h-8 px-3 text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                              onClick={() => updateStatus(r._id, "Refunded")}
+                            >
+                              Refund
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 px-3 text-[11px] font-bold shadow-sm"
+                              onClick={() => updateStatus(r._id, "Replaced")}
+                            >
+                              Replace
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  filtered.map((r) => (
-                    <tr key={r._id} className="hover:bg-muted/5 transition-colors">
-                      <td className="px-6 py-4 font-mono text-xs text-muted-foreground/70">
-                        {getID(r._id)}
-                      </td>
-
-                      <td className="px-6 py-4 font-mono text-indigo-600 dark:text-indigo-400 font-semibold text-xs">
-                        {getID(r.paymentId?.orderId)}
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-sm">{r.userId.name}</span>
-                          <span className="text-xs text-muted-foreground">{r.userId.email}</span>
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <div className="space-y-1">
-                          <p className="text-xs line-clamp-1 max-w-[200px]">{r.reason}</p>
-                          <div className="text-[10px] text-muted-foreground">
-                            {new Date(r.createdAt).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <span
-                          className={`flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border shadow-sm w-fit ${getStatusStyles(
-                            r.status,
-                          )}`}
-                        >
-                          {getStatusIcon(r.status)}
-                          {r.status}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          {r.status === "Pending" && (
-                            <>
-                              <Button
-                                size="sm"
-                                className="h-8 px-3 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                                onClick={() => updateStatus(r._id, "Approved")}
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="h-8 px-3 text-[11px] font-bold"
-                                onClick={() => updateStatus(r._id, "Rejected")}
-                              >
-                                Reject
-                              </Button>
-                            </>
-                          )}
-
-                          {r.status === "Approved" && (
-                            <>
-                              <Button
-                                size="sm"
-                                className="h-8 px-3 text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-bold"
-                                onClick={() => updateStatus(r._id, "Refunded")}
-                              >
-                                Refund
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 px-3 text-[11px] font-bold shadow-sm"
-                                onClick={() => updateStatus(r._id, "Replaced")}
-                              >
-                                Replace
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

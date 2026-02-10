@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 import { AxiosError } from "axios";
-import { BASE_URL } from "@/lib/api";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   Dialog,
@@ -42,11 +42,7 @@ const getID = (id: any): string => {
 };
 
 export default function TicketSystem() {
-  const token = localStorage.getItem("token");
 
-  const config = {
-    headers: { Authorization: `Bearer ${token}` },
-  };
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [search, setSearch] = useState("");
@@ -66,7 +62,7 @@ export default function TicketSystem() {
   const fetchTickets = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/tickets`);
+      const res = await api.get("/tickets");
       setTickets(res.data.tickets || []);
     } finally {
       setLoading(false);
@@ -86,7 +82,7 @@ export default function TicketSystem() {
 
       setSubmitting(true);
 
-      await axios.post(`${BASE_URL}/tickets`, form, config);
+      await api.post("/tickets", form);
 
       await fetchTickets();
 
@@ -111,13 +107,13 @@ export default function TicketSystem() {
   };
 
   const updateStatus = async (id: string, status: string) => {
-    await axios.patch(`${BASE_URL}/tickets/${id}/status`, { status }, config);
+    await api.patch(`/tickets/${id}/status`, { status });
 
     fetchTickets();
   };
 
   const deleteTicket = async (id: string) => {
-    await axios.delete(`${BASE_URL}/tickets/${id}`, config);
+    await api.delete(`/tickets/${id}`);
     fetchTickets();
   };
 
@@ -167,7 +163,18 @@ export default function TicketSystem() {
         </div>
 
         {/* CREATE BUTTON */}
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => {
+          setOpen(v)
+          if (!v) {
+            setForm({
+              subject: "",
+              message: "",
+              customerName: "",
+              customerEmail: "",
+              priority: "Medium",
+            })
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
               <Plus size={16} />
@@ -254,11 +261,6 @@ export default function TicketSystem() {
         </CardHeader>
 
         <CardContent>
-          {loading ? (
-            <div className="text-center py-10 text-muted-foreground">
-              Loading tickets...
-            </div>
-          ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
@@ -285,78 +287,106 @@ export default function TicketSystem() {
                   </tr>
                 </thead>
 
-                <tbody>
-                  {filtered.map((t) => (
-                    <tr
-                      key={t._id}
-                      className="border-b border-border hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="px-6 py-4 font-mono text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">
-                        {getID(t.ticketId)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-semibold text-foreground">
-                          {t.subject}
-                        </div>
-                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">
-                          {t.message}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-foreground">
-                          {t.customerName}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {t.customerEmail}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge
-                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm border ${getPriorityStyles(t.priority)}`}
-                        >
-                          {t.priority}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge
-                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm border ${getStatusStyles(t.status)}`}
-                        >
-                          {t.status}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`text-xs font-bold ${t.sla.includes("left") ? "text-amber-600" : "text-muted-foreground"}`}
-                        >
-                          {t.sla}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-[11px] font-bold uppercase border-border hover:bg-muted"
-                            onClick={() => updateStatus(t._id, "Resolved")}
+                <tbody className="divide-y divide-border">
+                  {loading ? (
+                    [...Array(5)].map((_, i) => (
+                      <tr key={i}>
+                        <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                        <td className="px-6 py-4">
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-40" />
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-3 w-32" />
+                          </div>
+                        </td>
+                        <td className="px-6 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                        <td className="px-6 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                        <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Skeleton className="h-8 w-16" />
+                            <Skeleton className="h-8 w-8 rounded-lg" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    filtered.map((t) => (
+                      <tr
+                        key={t._id}
+                        className="border-b border-border hover:bg-muted/30 transition-colors"
+                      >
+                        <td className="px-6 py-4 font-mono text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">
+                          {getID(t.ticketId)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-semibold text-foreground">
+                            {t.subject}
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                            {t.message}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-foreground">
+                            {t.customerName}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {t.customerEmail}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm border ${getPriorityStyles(t.priority)}`}
                           >
-                            Resolve
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => deleteTicket(t._id)}
+                            {t.priority}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm border ${getStatusStyles(t.status)}`}
                           >
-                            <Trash2 size={14} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {t.status}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`text-xs font-bold ${t.sla.includes("left") ? "text-amber-600" : "text-muted-foreground"}`}
+                          >
+                            {t.sla}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-[11px] font-bold uppercase border-border hover:bg-muted"
+                              onClick={() => updateStatus(t._id, "Resolved")}
+                            >
+                              Resolve
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => deleteTicket(t._id)}
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
-          )}
         </CardContent>
       </Card>
     </div>

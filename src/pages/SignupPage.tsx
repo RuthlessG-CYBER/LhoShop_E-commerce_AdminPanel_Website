@@ -12,8 +12,7 @@
 // import { Button } from "@/components/ui/button";
 // import { Input } from "@/components/ui/input";
 // import { Label } from "@/components/ui/label";
-// import { BASE_URL } from "@/lib/api";
-// import axios from "axios";
+// import api from "@/lib/api";
 
 // export default function SignupPage() {
 //   const navigate = useNavigate();
@@ -55,7 +54,7 @@
 //     setIsLoading(true);
 
 //     try {
-//       const res =await axios.post(`${BASE_URL}/admin/register`, {
+//       const res =await api.post("/admin/register", {
 //         name,
 //         email,
 //         password,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api, { BASE_URL } from "@/lib/api";
 
 import {
   Card,
@@ -20,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   Search,
@@ -29,7 +30,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { BASE_URL } from "@/lib/api";
+
 
 type PaymentItem = {
   productId: string;
@@ -57,7 +58,7 @@ export default function PaymentsInvoices() {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/admin/payments`);
+      const res = await api.get("/admin/payments");
       setPayments(res.data.payments || []);
     } finally {
       setLoading(false);
@@ -118,45 +119,61 @@ export default function PaymentsInvoices() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <DollarSign className="h-5 w-5 text-green-600" />
-            <div>
-              <p className="text-2xl font-bold">{formatPrice(totalRevenue)}</p>
-              <p className="text-sm text-muted-foreground">Total Revenue</p>
-            </div>
-          </CardContent>
-        </Card>
+        {loading ? (
+          [...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6 flex items-center gap-3">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <DollarSign className="h-5 w-5 text-green-600" />
+                <div>
+                  <p className="text-2xl font-bold">{formatPrice(totalRevenue)}</p>
+                  <p className="text-sm text-muted-foreground">Total Revenue</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <CreditCard className="h-5 w-5 text-blue-600" />
-            <div>
-              <p className="text-2xl font-bold">{paid.length}</p>
-              <p className="text-sm text-muted-foreground">Paid Invoices</p>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <CreditCard className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="text-2xl font-bold">{paid.length}</p>
+                  <p className="text-sm text-muted-foreground">Paid Invoices</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <TrendingUp className="h-5 w-5 text-orange-600" />
-            <div>
-              <p className="text-2xl font-bold">{formatPrice(pendingAmount)}</p>
-              <p className="text-sm text-muted-foreground">Processing</p>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <TrendingUp className="h-5 w-5 text-orange-600" />
+                <div>
+                  <p className="text-2xl font-bold">{formatPrice(pendingAmount)}</p>
+                  <p className="text-sm text-muted-foreground">Processing</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <CreditCard className="h-5 w-5 text-red-600" />
-            <div>
-              <p className="text-2xl font-bold">{formatPrice(overdueAmount)}</p>
-              <p className="text-sm text-muted-foreground">Failed / Overdue</p>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <CreditCard className="h-5 w-5 text-red-600" />
+                <div>
+                  <p className="text-2xl font-bold">{formatPrice(overdueAmount)}</p>
+                  <p className="text-sm text-muted-foreground">Failed / Overdue</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       <Card>
@@ -182,11 +199,6 @@ export default function PaymentsInvoices() {
         </CardHeader>
 
         <CardContent>
-          {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Loading payments...
-            </div>
-          ) : (
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
@@ -201,45 +213,66 @@ export default function PaymentsInvoices() {
               </TableHeader>
 
               <TableBody>
-                {filteredPayments.map((p) => (
-                  <TableRow key={p._id}>
-                    <TableCell className="font-mono text-primary font-semibold">
-                      INV-{p._id.slice(-6)}
-                    </TableCell>
-
-                    <TableCell>{p.orderId}</TableCell>
-
-                    <TableCell className="text-xs text-muted-foreground">
-                      {p.paymentId}
-                    </TableCell>
-
-                    <TableCell className="font-bold">
-                      {formatPrice(p.amount)}
-                    </TableCell>
-
-                    <TableCell>
-                      <Badge variant={getStatusColor(p.status)}>
-                        {p.status}
-                      </Badge>
-                    </TableCell>
-
-                    <TableCell>{formatDate(p.createdAt)}</TableCell>
-
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => downloadInvoice(p._id)}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Invoice PDF
-                      </Button>
+                {loading ? (
+                  [...Array(5)].map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-8 w-24 ml-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : filteredPayments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                      No payments found.
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredPayments.map((p) => (
+                    <TableRow key={p._id}>
+                      <TableCell className="font-mono text-primary font-semibold">
+                        INV-{p._id.slice(-6)}
+                      </TableCell>
+
+                      <TableCell>{p.orderId}</TableCell>
+
+                      <TableCell className="text-xs text-muted-foreground">
+                        {p.paymentId}
+                      </TableCell>
+
+                      <TableCell className="font-bold">
+                        {formatPrice(p.amount)}
+                      </TableCell>
+
+                      <TableCell>
+                        <Badge variant={getStatusColor(p.status)}>
+                          {p.status}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell>{formatDate(p.createdAt)}</TableCell>
+
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => downloadInvoice(p._id)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Invoice
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
-          )}
         </CardContent>
       </Card>
     </div>

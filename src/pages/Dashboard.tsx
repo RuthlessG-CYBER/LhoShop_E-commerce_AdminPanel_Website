@@ -5,18 +5,12 @@ import { RecentOrders } from "@/components/dashboard/RecentOrders";
 import { TopCategories } from "@/components/dashboard/TopCategories";
 import { Button } from "@/components/ui/button";
 import { Calendar, Download } from "lucide-react";
-import axios from "axios";
-import { BASE_URL } from "@/lib/api";
+import api from "@/lib/api";
 
 export default function Dashboard() {
   const downloadReport = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(`${BASE_URL}/admin/dashboard/export`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await api.get("/admin/dashboard/export", {
         responseType: "blob",
       });
 
@@ -34,7 +28,6 @@ export default function Dashboard() {
 
   return (
     <div className="p-8 space-y-8 min-h-screen bg-background text-foreground">
-      {/* Header section with actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -62,10 +55,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats Section */}
       <DashboardKPIs />
 
-      {/* Main Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-card rounded-3xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-6">
@@ -97,7 +88,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom Layout section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
         <div className="lg:col-span-2 bg-card rounded-3xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-6">

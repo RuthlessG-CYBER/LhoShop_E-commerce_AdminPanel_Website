@@ -31,7 +31,6 @@ export default function Settings() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-        {/* ================= APPEARANCE ================= */}
         <Card className="rounded-2xl shadow-md border">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
@@ -71,7 +70,6 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* ================= ABOUT ================= */}
         <Card className="rounded-2xl shadow-md border">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">

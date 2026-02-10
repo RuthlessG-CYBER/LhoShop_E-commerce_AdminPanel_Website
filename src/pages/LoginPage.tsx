@@ -13,8 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { BASE_URL } from '@/lib/api';
-import axios from 'axios';
+import api from '@/lib/api';
 
 export default function LoginPage() {
 
@@ -68,7 +67,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await axios.post(`${BASE_URL}/admin/login`, {
+      const res = await api.post("/admin/login", {
         email,
         password,
       });

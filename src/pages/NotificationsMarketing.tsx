@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from "react"
-import axios from "axios"
-import { BASE_URL } from "@/lib/api"
+import api from "@/lib/api"
 
 import {
   Card,
@@ -22,11 +21,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import { Skeleton } from "@/components/ui/skeleton"
+
 import { Bell } from "lucide-react"
 
 
 
-/* ================= TYPES ================= */
 
 type Notification = {
   _id: string
@@ -38,7 +38,6 @@ type Notification = {
 
 
 
-/* ================= COMPONENT ================= */
 
 export default function NotificationsMarketing() {
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -52,17 +51,11 @@ export default function NotificationsMarketing() {
 
 
 
-  /* ================= CONFIG ================= */
-
-  const getConfig = () => ({
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  })
 
 
 
-  /* ================= FETCH ================= */
+
+
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -72,10 +65,10 @@ export default function NotificationsMarketing() {
 
         const [listRes, totalRes, unreadRes, readRes] =
           await Promise.allSettled([
-            axios.get(`${BASE_URL}/admin/notifications`, getConfig()),
-            axios.get(`${BASE_URL}/admin/notifications/total`, getConfig()),
-            axios.get(`${BASE_URL}/admin/notifications/unread`, getConfig()),
-            axios.get(`${BASE_URL}/admin/notifications/read`, getConfig()),
+            api.get("/admin/notifications"),
+            api.get("/admin/notifications/total"),
+            api.get("/admin/notifications/unread"),
+            api.get("/admin/notifications/read"),
           ])
 
         if (listRes.status === "fulfilled") {
@@ -105,7 +98,6 @@ export default function NotificationsMarketing() {
 
 
 
-  /* ================= SAFE FILTER ================= */
 
   const filtered = useMemo(() => {
     return notifications.filter((n) =>
@@ -115,7 +107,6 @@ export default function NotificationsMarketing() {
 
 
 
-  /* ================= UI ================= */
 
   return (
     <div className="p-6 space-y-6 bg-background text-foreground min-h-screen">
@@ -131,45 +122,57 @@ export default function NotificationsMarketing() {
 
 
 
-      {/* ===== STATS ===== */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {loading ? (
+          [...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6 flex items-center gap-3">
+                <Skeleton className="w-5 h-5 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-12" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <Bell className="w-5 h-5 text-blue-600" />
+                <div>
+                  <p className="text-2xl font-bold">{total}</p>
+                  <p className="text-sm text-muted-foreground">Total</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <Bell className="w-5 h-5 text-blue-600" />
-            <div>
-              <p className="text-2xl font-bold">{total}</p>
-              <p className="text-sm text-muted-foreground">Total</p>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <Bell className="w-5 h-5 text-red-600" />
+                <div>
+                  <p className="text-2xl font-bold">{unread}</p>
+                  <p className="text-sm text-muted-foreground">Unread</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <Bell className="w-5 h-5 text-red-600" />
-            <div>
-              <p className="text-2xl font-bold">{unread}</p>
-              <p className="text-sm text-muted-foreground">Unread</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6 flex items-center gap-3">
-            <Bell className="w-5 h-5 text-green-600" />
-            <div>
-              <p className="text-2xl font-bold">{read}</p>
-              <p className="text-sm text-muted-foreground">Read</p>
-            </div>
-          </CardContent>
-        </Card>
-
+            <Card>
+              <CardContent className="p-6 flex items-center gap-3">
+                <Bell className="w-5 h-5 text-green-600" />
+                <div>
+                  <p className="text-2xl font-bold">{read}</p>
+                  <p className="text-sm text-muted-foreground">Read</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
 
 
-      {/* ===== TABLE ===== */}
 
       <Card>
         <CardHeader>
@@ -193,30 +196,41 @@ export default function NotificationsMarketing() {
         </CardHeader>
 
         <CardContent>
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : error ? (
-            <p className="text-red-600 text-sm">{error}</p>
-          ) : filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center">
-              No notifications found.
-            </p>
-          ) : (
-            <Table>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Message</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
+            </TableHeader>
 
-              <TableHeader>
+            <TableBody>
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-64" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                  </TableRow>
+                ))
+              ) : error ? (
                 <TableRow>
-                  <TableHead>Message</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableCell colSpan={4} className="text-red-600 text-sm py-10 text-center">
+                    {error}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {filtered.map((n) => (
+              ) : filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-sm text-muted-foreground text-center py-10">
+                    No notifications found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((n) => (
                   <TableRow key={n._id}>
-
                     <TableCell className="font-semibold">
                       {n.message}
                     </TableCell>
@@ -234,13 +248,11 @@ export default function NotificationsMarketing() {
                     <TableCell>
                       {new Date(n.createdAt).toLocaleString()}
                     </TableCell>
-
                   </TableRow>
-                ))}
-              </TableBody>
-
-            </Table>
-          )}
+                ))
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 

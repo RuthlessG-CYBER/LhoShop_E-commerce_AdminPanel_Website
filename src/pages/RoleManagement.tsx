@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react"
-import axios from "axios"
-import { BASE_URL } from "@/lib/api"
+import api from "@/lib/api"
+
+type Role = {
+  id: number
+  name: string
+  users: number
+  permissions: string[]
+  color: string
+}
 
 import {
   Card,
@@ -25,13 +32,7 @@ import {
 
 import { Plus, Users } from "lucide-react"
 
-type Role = {
-  id: number
-  name: string
-  users: number
-  permissions: string[]
-  color: string
-}
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function RoleManagement() {
   const [open, setOpen] = useState(false)
@@ -43,6 +44,7 @@ export default function RoleManagement() {
   const [role, setRole] = useState("manager")
 
   const [loading, setLoading] = useState(false)
+  const [loadingCounts, setLoadingCounts] = useState(true)
 
   const [roles, setRoles] = useState<Role[]>([
     {
@@ -75,17 +77,16 @@ export default function RoleManagement() {
     },
   ])
 
-  const headers = {
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  }
+
 
   const fetchCounts = async () => {
     try {
+      setLoadingCounts(true)
       const [superRes, adminRes, managerRes, supportRes] = await Promise.all([
-        axios.get(`${BASE_URL}/admin/super-admin-count`, { headers }),
-        axios.get(`${BASE_URL}/admin/admin-count`, { headers }),
-        axios.get(`${BASE_URL}/admin/manager-count`, { headers }),
-        axios.get(`${BASE_URL}/admin/support-count`, { headers }),
+        api.get("/admin/super-admin-count"),
+        api.get("/admin/admin-count"),
+        api.get("/admin/manager-count"),
+        api.get("/admin/support-count"),
       ])
 
       setRoles((prev) => [
@@ -96,6 +97,8 @@ export default function RoleManagement() {
       ])
     } catch (e) {
       console.log(e)
+    } finally {
+      setLoadingCounts(false)
     }
   }
 
@@ -110,15 +113,14 @@ export default function RoleManagement() {
     try {
       setLoading(true)
 
-      await axios.post(
-        `${BASE_URL}/admin/register`,
+      await api.post(
+        "/admin/register",
         {
           name,
           email,
           password,
           role,
-        },
-        { headers }
+        }
       )
 
       setOpen(false)
@@ -147,7 +149,16 @@ export default function RoleManagement() {
       </div>
 
       <div className="flex justify-end">
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => {
+          setOpen(v)
+          if (!v) {
+            setName("")
+            setEmail("")
+            setPassword("")
+            setConfirmPassword("")
+            setRole("manager")
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="rounded-xl px-4 font-bold shadow-lg shadow-primary/20 transition-all">
               <Plus className="mr-2 h-4 w-4" />
@@ -194,37 +205,60 @@ export default function RoleManagement() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {roles.map((r) => (
-          <Card key={r.id} className="bg-card rounded-3xl border border-border overflow-hidden hover:shadow-md transition-all duration-300">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-2xl border ${r.color} flex items-center justify-center shadow-sm`}>
-                  <Users className="w-6 h-6" />
+        {loadingCounts ? (
+          [...Array(4)].map((_, i) => (
+            <Card key={i} className="bg-card rounded-3xl border border-border overflow-hidden">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="w-12 h-12 rounded-2xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
                 </div>
-
-                <div>
-                  <CardTitle className="text-xl font-bold tracking-tight">{r.name}</CardTitle>
-                  <CardDescription className="text-sm font-medium">{r.users} Active Administrators</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                  Key Permissions
-                </div>
+              </CardHeader>
+              <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {r.permissions.map((perm) => (
-                    <Badge key={perm} className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider border shadow-sm bg-muted/30 text-foreground">
-                      {perm}
-                    </Badge>
-                  ))}
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          roles.map((r) => (
+            <Card key={r.id} className="bg-card rounded-3xl border border-border overflow-hidden hover:shadow-md transition-all duration-300">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-2xl border ${r.color} flex items-center justify-center shadow-sm`}>
+                    <Users className="w-6 h-6" />
+                  </div>
+
+                  <div>
+                    <CardTitle className="text-xl font-bold tracking-tight">{r.name}</CardTitle>
+                    <CardDescription className="text-sm font-medium">{r.users} Active Administrators</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    Key Permissions
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {r.permissions.map((perm) => (
+                      <Badge key={perm} className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider border shadow-sm bg-muted/30 text-foreground">
+                        {perm}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   )

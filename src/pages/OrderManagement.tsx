@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { BASE_URL } from "@/lib/api";
+
 
 type OrderItem = {
   productId: string;
@@ -57,16 +58,12 @@ export default function OrderManagement() {
   const [sort, setSort] = useState<"new" | "old" | "high" | "low">("new");
   const [sortOpen, setSortOpen] = useState(false);
 
-  const getConfig = () => ({
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
+
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/orders`, getConfig());
+      const res = await api.get("/orders");
       setOrders(res.data.orders || []);
     } finally {
       setLoading(false);
@@ -77,14 +74,12 @@ export default function OrderManagement() {
     fetchOrders();
   }, []);
 
-  /* ================= UPDATE STATUS ================= */
 
   const updateStatus = async (orderId: string, status: string) => {
     try {
-      await axios.patch(
-        `${BASE_URL}/orders/status/${orderId}`,
-        { status },
-        getConfig(),
+      await api.patch(
+        `/orders/status/${orderId}`,
+        { status }
       );
 
       fetchOrders();
@@ -93,7 +88,6 @@ export default function OrderManagement() {
     }
   };
 
-  /* ================= FILTER ================= */
 
   const filteredOrders = useMemo(() => {
     let list = [...orders];
@@ -243,23 +237,42 @@ export default function OrderManagement() {
         </div>
 
         <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-10 text-center text-muted-foreground">Loading...</div>
-          ) : (
-            <table className="w-full">
-              <thead className="bg-muted/50 text-[10px] font-bold uppercase tracking-widest">
-                <tr className="border-b border-border">
-                  <th className="px-6 py-4 text-left text-muted-foreground">Order</th>
-                  <th className="px-6 py-4 text-left text-muted-foreground">User</th>
-                  <th className="px-6 py-4 text-left text-muted-foreground">Items</th>
-                  <th className="px-6 py-4 text-left text-muted-foreground">Status</th>
-                  <th className="px-6 py-4 text-left text-muted-foreground">Address</th>
-                  <th className="px-6 py-4 text-right text-muted-foreground">Amount</th>
-                </tr>
-              </thead>
+          <table className="w-full">
+            <thead className="bg-muted/50 text-[10px] font-bold uppercase tracking-widest">
+              <tr className="border-b border-border">
+                <th className="px-6 py-4 text-left text-muted-foreground">Order</th>
+                <th className="px-6 py-4 text-left text-muted-foreground">User</th>
+                <th className="px-6 py-4 text-left text-muted-foreground">Items</th>
+                <th className="px-6 py-4 text-left text-muted-foreground">Status</th>
+                <th className="px-6 py-4 text-left text-muted-foreground">Address</th>
+                <th className="px-6 py-4 text-right text-muted-foreground">Amount</th>
+              </tr>
+            </thead>
 
-              <tbody className="divide-y divide-border">
-                {filteredOrders.map((order) => (
+            <tbody className="divide-y divide-border">
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-24 rounded-full" />
+                        <Skeleton className="h-6 w-16" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-40" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="h-4 w-12 ml-auto" /></td>
+                  </tr>
+                ))
+              ) : (
+                filteredOrders.map((order) => (
                   <tr key={order._id} className="hover:bg-muted/5 transition-colors">
                     <td className="px-6 py-4 font-mono text-[11px] text-muted-foreground/70">
                       {getID(order.orderId)}
@@ -306,10 +319,10 @@ export default function OrderManagement() {
                       {formatPrice(order.amount)}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

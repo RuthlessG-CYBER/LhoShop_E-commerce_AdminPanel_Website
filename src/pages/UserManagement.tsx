@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react"
-import axios from "axios"
+import api from "@/lib/api"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 
 import {
   Dialog,
@@ -24,8 +25,6 @@ import {
   EyeOff,
   Loader2,
 } from "lucide-react"
-
-import { BASE_URL } from "@/lib/api"
 
 
 type Address = {
@@ -79,7 +78,7 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true)
-      const res = await axios.get(`${BASE_URL}/admin/users`)
+      const res = await api.get("/admin/users")
       setUsers(res.data.users || [])
     } finally {
       setLoading(false)
@@ -96,7 +95,7 @@ export default function UserManagement() {
 
     try {
       setSubmitting(true)
-      await axios.post(`${BASE_URL}/register`, form)
+      await api.post("/register", form)
       await fetchUsers()
       setForm({ name: "", email: "", password: "" })
       setOpen(false)
@@ -155,7 +154,13 @@ export default function UserManagement() {
           </p>
         </div>
 
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => {
+          setOpen(v)
+          if (!v) {
+            setForm({ name: "", email: "", password: "" })
+            setShowPassword(false)
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 px-6 font-semibold transition-all">
               <Plus className="mr-2 h-4 w-4" />
@@ -284,29 +289,41 @@ export default function UserManagement() {
 
 
         <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest border-b border-border">User Profile</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest border-b border-border">Email</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest border-b border-border">Status</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest border-b border-border">Join Date</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-right text-muted-foreground/60 uppercase tracking-widest border-b border-border">Orders</th>
+                <th className="px-6 py-4 border-b border-border" />
+              </tr>
+            </thead>
 
-          {loading ? (
-            <div className="p-10 text-center text-muted-foreground">
-              Loading users...
-            </div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-
-              <thead>
-                <tr className="bg-muted/50">
-                  <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest border-b border-border">User Profile</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest border-b border-border">Email</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest border-b border-border">Status</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest border-b border-border">Join Date</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-right text-muted-foreground/60 uppercase tracking-widest border-b border-border">Orders</th>
-                  <th className="px-6 py-4 border-b border-border" />
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-border">
-                {filteredUsers.map((user) => (
+            <tbody className="divide-y divide-border">
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-10 h-10 rounded-2xl" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-20" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-40" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-16 rounded-full" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="h-4 w-8 ml-auto" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-8 w-8 rounded-lg ml-auto" /></td>
+                  </tr>
+                ))
+              ) : (
+                filteredUsers.map((user) => (
                   <tr key={user._id} className="group hover:bg-muted/50">
-
                     <td className="px-6 py-4 flex items-center gap-3">
                       <div className="w-10 h-10 rounded-2xl border bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-[11px] shadow-sm">
                         {initials(user.name)}
@@ -336,13 +353,11 @@ export default function UserManagement() {
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </td>
-
                   </tr>
-                ))}
-              </tbody>
-
-            </table>
-          )}
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
